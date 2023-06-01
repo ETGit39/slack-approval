@@ -60,7 +60,7 @@ function run() {
             const runnerOS = process.env.RUNNER_OS || "";
             const actor = process.env.USER_NAME || "";
             const initialMessage = {
-                channel: "CHANNEL_ID",
+                channel: channel_id,
                 text: "ARE ALL SMOKE GROUPS GREEN?",
                 blocks: [
                   {
