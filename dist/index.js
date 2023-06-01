@@ -3,7 +3,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-        desc = { enumerable: true, get: function() { return m[k]; } };
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
@@ -49,7 +49,6 @@ const app = new bolt_1.App({
     port: 3000,
     logLevel: bolt_1.LogLevel.DEBUG,
 });
-
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -60,50 +59,12 @@ function run() {
             const actionsUrl = `${github_server_url}/${github_repos}/actions/runs/${run_id}`;
             const runnerOS = process.env.RUNNER_OS || "";
             const actor = process.env.USER_NAME || "";
-
-            const askConfirmation = () => {
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield web.chat.postMessage({
-                        channel: channel_id,
-                        text: "Are you sure you want to proceed?",
-                        blocks: [
-                            {
-                                "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": "Confirmation Dialog\nAre you sure you want to proceed?"
-                                }
-                            },
-                            {
-                                "type": "actions",
-                                "elements": [
-                                    {
-                                        "type": "button",
-                                        "text": {
-                                            "type": "plain_text",
-                                            "text": "Yes",
-                                            "emoji": true
-                                        },
-                                        "style": "primary",
-                                        "value": "confirm"
-                                    },
-                                    {
-                                        "type": "button",
-                                        "text": {
-                                            "type": "plain_text",
-                                            "text": "No",
-                                            "emoji": true
-                                        },
-                                        "style": "danger",
-                                        "value": "cancel"
-                                    }
-                                ]
-                            }
-                        ]
-                    });
+            const handleGoBack = () => __awaiter(this, void 0, void 0, function* () {
+                yield web.chat.postMessage({
+                  channel: channel_id,
+                  text: "Went back to previous step.",
                 });
-            };
-
+              });
             (() => __awaiter(this, void 0, void 0, function* () {
                 yield web.chat.postMessage({
                     channel: channel_id,
@@ -113,7 +74,7 @@ function run() {
                             "type": "section",
                             "text": {
                                 "type": "mrkdwn",
-                                "text": `Hey @${actor} 🌪️\nPlease verify all smoke groups are green. If not, sort the issue by fixing bugs and re-running the group. Proceed only after that.`,
+                                "text": `Hey @${actor} 🐝\nPlease verify all smoke groups are green. If not, sort the issue by fixing bugs and re-running the group. Proceed only after that.`,
                             }
                         },
                         {
@@ -124,88 +85,186 @@ function run() {
                                     "text": `*Actions URL:*\n${actionsUrl}`
                                 },
                             ]
+                        },
+                        {
+                            "type": "actions",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "emoji": true,
+                                        "text": "Approve"
+                                    },
+                                    "style": "primary",
+                                    "value": "approve",
+                                    "action_id": "slack-approval-approve"
+                                },
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "emoji": true,
+                                        "text": "Reject"
+                                    },
+                                    "style": "danger",
+                                    "value": "reject",
+                                    "action_id": "slack-approval-reject"
+                                }
+                            ]
                         }
                     ]
                 });
-                const result = yield app.client.dialog.open({
-                    token: token,
-                    trigger_id: "TRIGGER_ID",
-                    dialog: {
-                        callback_id: "initial_dialog",
-                        title: "Confirmation Dialog",
-                        submit_label: "Submit",
-                        notify_on_cancel: false,
-                        elements: [
-                            {
-                                label: "Are you sure?",
-                                type: "select",
-                                name: "confirmation",
-                                options: [
-                                    {
-                                        label: "Yes",
-                                        value: "yes"
-                                    },
-                                    {
-                                        label: "No",
-                                        value: "no"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                });
-                console.log(result);
-                if (result.submission && result.submission.confirmation === "yes") {
-                    yield askConfirmation();
-                } else {
-                    // Handle "No" response
-                    // Go back to initial dialog box and wait
-                    run();
-                }
             }))();
-
-            app.action('confirm', ({ ack }) => __awaiter(this, void 0, void 0, function* () {
-                yield ack();
-                // Handle "Yes" response
-                // Proceed with the approval process
-                (() => __awaiter(this, void 0, void 0, function* () {
-                    yield web.chat.postMessage({
-                        channel: channel_id,
-                        text: "ARE ALL SMOKE GROUPS GREEN?",
-                        blocks: [
-                            {
-                                "type": "section",
-                                "text": {
+            app.action('slack-approval-approve', __awaiter(this, void 0, void 0, function* () {
+                yield web.chat.postMessage({
+                    channel: channel_id,
+                    text: "ARE YOU SURE?",
+                    blocks: [
+                        {
+                            "type": "section",
+                            "fields": [
+                                {
                                     "type": "mrkdwn",
-                                    "text": `Hey @${actor} 🌪️\nPlease verify all smoke groups are green. If not, sort the issue by fixing bugs and re-running the group. Proceed only after that.`,
-                                }
-                            },
-                            {
-                                "type": "section",
-                                "fields": [
-                                    {
-                                        "type": "mrkdwn",
-                                        "text": `*Actions URL:*\n${actionsUrl}`
+                                    "text": `Hold up! ✋ Are you sure you want to proceed? ✅`
+                                },
+                            ]
+                        },
+                        {
+                            "type": "actions",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "emoji": true,
+                                        "text": "Approve"
                                     },
-                                ]
-                            }
-                        ]
-                    });
-                }))();
+                                    "style": "primary",
+                                    "value": "approve",
+                                    "action_id": "sure-approval-approve"
+                                },
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "emoji": true,
+                                        "text": "Reject"
+                                    },
+                                    "style": "danger",
+                                    "value": "reject",
+                                    "action_id": "go-back"
+                                }
+                            ]
+                        }
+                    ]
+                });
+            }));
+            app.action('slack-approval-reject', __awaiter(this, void 0, void 0, function* () {
+                yield web.chat.postMessage({
+                    channel: channel_id,
+                    text: "ARE YOU SURE?",
+                    blocks: [
+                        {
+                            "type": "section",
+                            "fields": [
+                                {
+                                    "type": "mrkdwn",
+                                    "text": `Hold up! ✋ Are you sure you want to cancel? ❌`
+                                },
+                            ]
+                        },
+                        {
+                            "type": "actions",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "emoji": true,
+                                        "text": "Approve"
+                                    },
+                                    "style": "primary",
+                                    "value": "approve",
+                                    "action_id": "sure-approval-reject"
+                                },
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "emoji": true,
+                                        "text": "Reject"
+                                    },
+                                    "style": "danger",
+                                    "value": "reject",
+                                    "action_id": "go-back"
+                                }
+                            ]
+                        }
+                    ]
+                });
             }));
 
-            app.action('cancel', ({ ack }) => __awaiter(this, void 0, void 0, function* () {
+            app.action("go-back", __awaiter(this, void 0, void 0, function* () {
+                yield handleGoBack();
+            }));    
+            app.action('sure-approval-approve', ({ ack, client, body, logger }) => __awaiter(this, void 0, void 0, function* () {
+                var _a, _b, _c;
                 yield ack();
-                // Handle "No" response
-                // Go back to initial dialog box and wait
-                run();
+                try {
+                    const response_blocks = (_a = body.message) === null || _a === void 0 ? void 0 : _a.blocks;
+                    response_blocks.pop();
+                    response_blocks.push({
+                        'type': 'section',
+                        'text': {
+                            'type': 'mrkdwn',
+                            'text': `Approved by <@${body.user.id}> `,
+                        },
+                    });
+                    yield client.chat.update({
+                        channel: ((_b = body.channel) === null || _b === void 0 ? void 0 : _b.id) || "",
+                        ts: ((_c = body.message) === null || _c === void 0 ? void 0 : _c.ts) || "",
+                        blocks: response_blocks
+                    });
+                }
+                catch (error) {
+                    logger.error(error);
+                }
+                process.exit(0);
             }));
-
-            yield app.start();
-        } catch (error) {
-            core.setFailed(error.message);
+            app.action('sure-approval-reject', ({ ack, client, body, logger }) => __awaiter(this, void 0, void 0, function* () {
+                var _d, _e, _f;
+                yield ack();
+                try {
+                    const response_blocks = (_d = body.message) === null || _d === void 0 ? void 0 : _d.blocks;
+                    response_blocks.pop();
+                    response_blocks.push({
+                        'type': 'section',
+                        'text': {
+                            'type': 'mrkdwn',
+                            'text': `Rejected by <@${body.user.id}>`,
+                        },
+                    });
+                    yield client.chat.update({
+                        channel: ((_e = body.channel) === null || _e === void 0 ? void 0 : _e.id) || "",
+                        ts: ((_f = body.message) === null || _f === void 0 ? void 0 : _f.ts) || "",
+                        blocks: response_blocks
+                    });
+                }
+                catch (error) {
+                    logger.error(error);
+                }
+                process.exit(1);
+            }));
+            (() => __awaiter(this, void 0, void 0, function* () {
+                yield app.start(3000);
+                console.log('Waiting Approval reaction.....');
+            }))();
+        }
+        catch (error) {
+            if (error instanceof Error)
+                core.setFailed(error.message);
         }
     });
 }
-
 run();
