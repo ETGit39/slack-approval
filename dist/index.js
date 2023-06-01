@@ -110,9 +110,12 @@ function run() {
               };
               yield web.chat.postMessage(initialMessage)
               app.action("slack-approval-approve", async ({ ack, body, client }) => {
+                var _a, _b, _c;
+                yield ack();
                 try {
                   await ack();
-            
+                  const response_blocks = (_a = body.message) === null || _a === void 0 ? void 0 : _a.blocks;
+                  response_blocks.pop();
                   const confirmationModal = {
                     type: "modal",
                     title: {
@@ -152,6 +155,7 @@ function run() {
                       },
                     ],
                   };
+                  response_blocks.push(confirmationModal)
             
                   const result = await client.views.open({
                     trigger_id: body.trigger_id,
