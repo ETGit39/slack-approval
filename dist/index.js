@@ -108,7 +108,7 @@ function run() {
                   },
                 ],
               };
-            
+              yield web.chat.postMessage(initialMessage)
               app.action("slack-approval-approve", async ({ ack, body, client }) => {
                 try {
                   await ack();
