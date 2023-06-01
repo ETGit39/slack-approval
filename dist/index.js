@@ -59,212 +59,263 @@ function run() {
             const actionsUrl = `${github_server_url}/${github_repos}/actions/runs/${run_id}`;
             const runnerOS = process.env.RUNNER_OS || "";
             const actor = process.env.USER_NAME || "";
-            const handleGoBack = () => __awaiter(this, void 0, void 0, function* () {
-                yield web.chat.postMessage({
-                  channel: channel_id,
-                  text: "Went back to previous step.",
-                });
-              });
-            (() => __awaiter(this, void 0, void 0, function* () {
-                yield web.chat.postMessage({
-                    channel: channel_id,
-                    text: "ARE ALL SMOKE GROUPS GREEN?",
-                    blocks: [
-                        {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": `Hey @${actor} 🐝\nPlease verify all smoke groups are green. If not, sort the issue by fixing bugs and re-running the group. Proceed only after that.`,
-                            }
+            const initialMessage = {
+                channel: "CHANNEL_ID",
+                text: "ARE ALL SMOKE GROUPS GREEN?",
+                blocks: [
+                  {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: `Hey @${actor} 🐝\nPlease verify all smoke groups are green. If not, sort the issue by fixing bugs and re-running the group. Proceed only after that.`,
+                    },
+                  },
+                  {
+                    type: "section",
+                    fields: [
+                      {
+                        type: "mrkdwn",
+                        text: `*Actions URL:*\n${actionsUrl}`,
+                      },
+                    ],
+                  },
+                  {
+                    type: "actions",
+                    elements: [
+                      {
+                        type: "button",
+                        text: {
+                          type: "plain_text",
+                          emoji: true,
+                          text: "Approve",
                         },
-                        {
-                            "type": "section",
-                            "fields": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": `*Actions URL:*\n${actionsUrl}`
-                                },
-                            ]
+                        style: "primary",
+                        value: "approve",
+                        action_id: "slack-approval-approve",
+                      },
+                      {
+                        type: "button",
+                        text: {
+                          type: "plain_text",
+                          emoji: true,
+                          text: "Reject",
                         },
-                        {
-                            "type": "actions",
-                            "elements": [
-                                {
-                                    "type": "button",
-                                    "text": {
-                                        "type": "plain_text",
-                                        "emoji": true,
-                                        "text": "Approve"
-                                    },
-                                    "style": "primary",
-                                    "value": "approve",
-                                    "action_id": "slack-approval-approve"
-                                },
-                                {
-                                    "type": "button",
-                                    "text": {
-                                        "type": "plain_text",
-                                        "emoji": true,
-                                        "text": "Reject"
-                                    },
-                                    "style": "danger",
-                                    "value": "reject",
-                                    "action_id": "slack-approval-reject"
-                                }
-                            ]
-                        }
-                    ]
-                });
-            }))();
-            app.action('slack-approval-approve', __awaiter(this, void 0, void 0, function* () {
-                yield web.chat.postMessage({
-                    channel: channel_id,
-                    text: "ARE YOU SURE?",
-                    blocks: [
-                        {
-                            "type": "section",
-                            "fields": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": `Hold up! ✋ Are you sure you want to proceed? ✅`
-                                },
-                            ]
-                        },
-                        {
-                            "type": "actions",
-                            "elements": [
-                                {
-                                    "type": "button",
-                                    "text": {
-                                        "type": "plain_text",
-                                        "emoji": true,
-                                        "text": "Approve"
-                                    },
-                                    "style": "primary",
-                                    "value": "approve",
-                                    "action_id": "sure-approval-approve"
-                                },
-                                {
-                                    "type": "button",
-                                    "text": {
-                                        "type": "plain_text",
-                                        "emoji": true,
-                                        "text": "Reject"
-                                    },
-                                    "style": "danger",
-                                    "value": "reject",
-                                    "action_id": "go-back"
-                                }
-                            ]
-                        }
-                    ]
-                });
-            }));
-            app.action('slack-approval-reject', __awaiter(this, void 0, void 0, function* () {
-                yield web.chat.postMessage({
-                    channel: channel_id,
-                    text: "ARE YOU SURE?",
-                    blocks: [
-                        {
-                            "type": "section",
-                            "fields": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": `Hold up! ✋ Are you sure you want to cancel? ❌`
-                                },
-                            ]
-                        },
-                        {
-                            "type": "actions",
-                            "elements": [
-                                {
-                                    "type": "button",
-                                    "text": {
-                                        "type": "plain_text",
-                                        "emoji": true,
-                                        "text": "Approve"
-                                    },
-                                    "style": "primary",
-                                    "value": "approve",
-                                    "action_id": "sure-approval-reject"
-                                },
-                                {
-                                    "type": "button",
-                                    "text": {
-                                        "type": "plain_text",
-                                        "emoji": true,
-                                        "text": "Reject"
-                                    },
-                                    "style": "danger",
-                                    "value": "reject",
-                                    "action_id": "go-back"
-                                }
-                            ]
-                        }
-                    ]
-                });
-            }));
-
-            app.action("go-back", __awaiter(this, void 0, void 0, function* () {
-                yield handleGoBack();
-            }));    
-            app.action('sure-approval-approve', ({ ack, client, body, logger }) => __awaiter(this, void 0, void 0, function* () {
-                var _a, _b, _c;
-                yield ack();
+                        style: "danger",
+                        value: "reject",
+                        action_id: "slack-approval-reject",
+                      },
+                    ],
+                  },
+                ],
+              };
+            
+              app.action("slack-approval-approve", async ({ ack, body, client }) => {
                 try {
-                    const response_blocks = (_a = body.message) === null || _a === void 0 ? void 0 : _a.blocks;
-                    response_blocks.pop();
-                    response_blocks.push({
-                        'type': 'section',
-                        'text': {
-                            'type': 'mrkdwn',
-                            'text': `Approved by <@${body.user.id}> `,
+                  await ack();
+            
+                  const confirmationModal = {
+                    type: "modal",
+                    title: {
+                      type: "plain_text",
+                      text: "Confirmation",
+                    },
+                    blocks: [
+                      {
+                        type: "section",
+                        text: {
+                          type: "mrkdwn",
+                          text: `Are you sure you want to approve?`,
                         },
-                    });
-                    yield client.chat.update({
-                        channel: ((_b = body.channel) === null || _b === void 0 ? void 0 : _b.id) || "",
-                        ts: ((_c = body.message) === null || _c === void 0 ? void 0 : _c.ts) || "",
-                        blocks: response_blocks
-                    });
+                      },
+                      {
+                        type: "actions",
+                        elements: [
+                          {
+                            type: "button",
+                            text: {
+                              type: "plain_text",
+                              text: "Confirm",
+                            },
+                            style: "primary",
+                            value: "approve-confirm",
+                          },
+                          {
+                            type: "button",
+                            text: {
+                              type: "plain_text",
+                              text: "Reject",
+                            },
+                            style: "danger",
+                            value: "approve-reject",
+                          },
+                        ],
+                      },
+                    ],
+                  };
+            
+                  const result = await client.views.open({
+                    trigger_id: body.trigger_id,
+                    view: confirmationModal,
+                  });
+            
+                  console.log("Confirmation dialog opened", result);
+                } catch (error) {
+                  console.error(error);
                 }
-                catch (error) {
-                    logger.error(error);
+              });
+            
+              app.action("approve-confirm", async ({ ack, body, client }) => {
+                try {
+                  await ack();
+            
+                  const responseBlocks = body.message.blocks;
+                  responseBlocks.pop();
+                  responseBlocks.push({
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: `Approved by <@${body.user.id}>`,
+                    },
+                  });
+            
+                  await client.chat.update({
+                    channel: body.channel.id,
+                    ts: body.message.ts,
+                    blocks: responseBlocks,
+                  });
+            
+                  // Other actions to be performed after approval confirmation
+                } catch (error) {
+                  console.error(error);
                 }
                 process.exit(0);
-            }));
-            app.action('sure-approval-reject', ({ ack, client, body, logger }) => __awaiter(this, void 0, void 0, function* () {
-                var _d, _e, _f;
-                yield ack();
+              });
+            
+              app.action("approve-reject", async ({ ack, body, client }) => {
                 try {
-                    const response_blocks = (_d = body.message) === null || _d === void 0 ? void 0 : _d.blocks;
-                    response_blocks.pop();
-                    response_blocks.push({
-                        'type': 'section',
-                        'text': {
-                            'type': 'mrkdwn',
-                            'text': `Rejected by <@${body.user.id}>`,
+                    await ack();
+              
+                    await client.chat.postMessage(initialMessage);
+              
+                    console.log("Flow restarted");
+                  } catch (error) {
+                    console.error(error);
+                  }
+                });
+              
+                (async () => {
+                  await app.start(3000);
+                  console.log("Waiting for approval reaction...");
+                  await client.chat.postMessage(initialMessage);
+                  console.log("Initial message sent");
+                })();
+            
+              app.action("slack-approval-reject", async ({ ack, body, client }) => {
+                try {
+                  await ack();
+            
+                  const confirmationModal = {
+                    type: "modal",
+                    title: {
+                      type: "plain_text",
+                      text: "Confirmation",
+                    },
+                    blocks: [
+                      {
+                        type: "section",
+                        text: {
+                          type: "mrkdwn",
+                          text: `Are you sure you want to cancel?`,
                         },
-                    });
-                    yield client.chat.update({
-                        channel: ((_e = body.channel) === null || _e === void 0 ? void 0 : _e.id) || "",
-                        ts: ((_f = body.message) === null || _f === void 0 ? void 0 : _f.ts) || "",
-                        blocks: response_blocks
-                    });
+                      },
+                      {
+                        type: "actions",
+                        elements: [
+                          {
+                            type: "button",
+                            text: {
+                              type: "plain_text",
+                              text: "Confirm",
+                            },
+                            style: "primary",
+                            value: "reject-confirm",
+                          },
+                          {
+                            type: "button",
+                            text: {
+                              type: "plain_text",
+                              text: "Go Back",
+                            },
+                            style: "danger",
+                            value: "reject-cancel",
+                          },
+                        ],
+                      },
+                    ],
+                  };
+            
+                  const result = await client.views.open({
+                    trigger_id: body.trigger_id,
+                    view: confirmationModal,
+                  });
+            
+                  console.log("Confirmation dialog opened", result);
+                } catch (error) {
+                  console.error(error);
                 }
-                catch (error) {
-                    logger.error(error);
+              });
+            
+              app.action("reject-confirm", async ({ ack, body, client }) => {
+                try {
+                  await ack();
+            
+                  const responseBlocks = body.message.blocks;
+                  responseBlocks.pop();
+                  responseBlocks.push({
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: `Rejected by <@${body.user.id}>`,
+                    },
+                  });
+            
+                  await client.chat.update({
+                    channel: body.channel.id,
+                    ts: body.message.ts,
+                    blocks: responseBlocks,
+                  });
+            
+                  // Other actions to be performed after rejection confirmation
+                } catch (error) {
+                  console.error(error);
                 }
                 process.exit(1);
-            }));
-            (() => __awaiter(this, void 0, void 0, function* () {
-                yield app.start(3000);
-                console.log('Waiting Approval reaction.....');
-            }))();
-        }
-        catch (error) {
-            if (error instanceof Error)
-                core.setFailed(error.message);
+              });
+            
+              app.action("reject-cancel", async ({ ack, client }) => {
+                try {
+                  await ack();
+            
+                  await client.chat.postMessage(initialMessage);
+            
+                  console.log("Flow restarted");
+                } catch (error) {
+                  console.error(error);
+                }
+              });
+            
+              (async () => {
+                await app.start(3000);
+                console.log("Waiting for approval reaction...");
+                await client.chat.postMessage(initialMessage);
+                console.log("Initial message sent");
+              })();
+            }
+            catch (error) {
+                if (error instanceof Error)
+                    core.setFailed(error.message);
         }
     });
 }
+          
 run();
